@@ -8,6 +8,25 @@ def get_urls(subreddit):
     submissions = r.get_subreddit(subreddit).get_hot()
     return [x for x in submissions]
 
+def is_image(url):
+    patterns = [
+        "((http(s?):\/\/)?((i\.)?)redd\.it\/)([a-zA-Z0-9]{5,13})((\.jpg|\.gif|\.gifv|\.png)?)(?:[^a-zA-Z0-9]|$)",
+        "((http(s?):\/\/)?((i\.)?)imgur\.com\/)((?:[a]\/)?)([a-zA-Z0-9]{5,8})((\.jpg|\.gif|\.gifv|\.png)?)(?:[^a-zA-Z0-9]|$)",
+        ]
+    for pattern in patterns:
+        result = re.search(pattern, url)
+        if result:
+            return True
+    return False
+
+def get_img_links(links):
+    img_links = []
+
+    for link in links:
+        if is_image(link.url):
+           img_links.append(link)
+    return img_links
+
 def get_imgur_links(links):
     
     pattern ="((http(s?):\/\/)?((i\.)?)imgur\.com\/)((?:[a]\/)?)([a-zA-Z0-9]{5,8})((\.jpg|\.gif|\.gifv|\.png)?)(?:[^a-zA-Z0-9]|$)"
@@ -32,7 +51,8 @@ def get_imgur_links(links):
 
 subreddits = "baking+FoodPorn"
 
-links=get_urls(subreddits)
+links1=get_urls(subreddits)
+links = get_img_links(links1)
 #a = [x for x in  get_imgur_links(links)]
 print("DETAILS")
 for link in links:
