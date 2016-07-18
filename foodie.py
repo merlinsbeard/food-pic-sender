@@ -5,13 +5,20 @@ user_agent = "Give me Food"
 r = praw.Reddit(user_agent=user_agent)
 
 def get_urls(subreddit):
+    """
+    Returns a list of urls depending on what subreddit
+    """
     submissions = r.get_subreddit(subreddit).get_hot()
     return [x for x in submissions]
 
 def is_image(url):
+    """
+    Returns True if link is an imgur or reddit link
+    """
     patterns = [
         "((http(s?):\/\/)?((i\.)?)redd\.it\/)([a-zA-Z0-9]{5,13})((\.jpg|\.gif|\.gifv|\.png)?)(?:[^a-zA-Z0-9]|$)",
-        "((http(s?):\/\/)?((i\.)?)imgur\.com\/)((?:[a]\/)?)([a-zA-Z0-9]{5,8})((\.jpg|\.gif|\.gifv|\.png)?)(?:[^a-zA-Z0-9]|$)",
+        "((http(s?):\/\/)?((i\.)?)imgur\.com\/)([a-zA-Z0-9]{5,8})((\.jpg|\.gif|\.gifv|\.png)?)(?:[^a-zA-Z0-9]|$)",
+        #"((http(s?):\/\/)?((i\.)?)imgur\.com\/)((?:[a]\/)?)([a-zA-Z0-9]{5,8})((\.jpg|\.gif|\.gifv|\.png)?)(?:[^a-zA-Z0-9]|$)",
         ]
     for pattern in patterns:
         result = re.search(pattern, url)
@@ -20,40 +27,38 @@ def is_image(url):
     return False
 
 def get_img_links(links):
+    """
+    Returns the image link of a reddit link
+    """
     img_links = []
-
+    score = 200
     for link in links:
-        if is_image(link.url):
+        if is_image(link.url) and link.score > score :
            img_links.append(link)
-    return img_links
+    return img_links[:5]
 
-def get_imgur_links(links):
-    
-    pattern ="((http(s?):\/\/)?((i\.)?)imgur\.com\/)((?:[a]\/)?)([a-zA-Z0-9]{5,8})((\.jpg|\.gif|\.gifv|\.png)?)(?:[^a-zA-Z0-9]|$)"
+def is_imgur_album(imgur_link):
+    """
+    Checks if a imgur url is an album
+    """
+    if imgur_link:
+        return False
+    return True
 
-    imgur_links = []
-    for count, x in enumerate(links):
-        output = count, x.url
-        result = re.search(pattern, x.url)
-        if result:
-            imgur_links.append(x.url)
-    return imgur_links 
+def imgur_album_images(album_id):
 
-#def get_link_details(link):
-#    detail = r.get_submission(submission_id = link.id)
-#    details = {
-#        'subreddit': detail.subreddit.__str__(),
-#        'permalink': detail.permalink,
-#        'link': detail.url
-#        }
-#    return details
-   
+    return [x.url for x in get_album_images(album_id)]
+
+
+def top_4():
+    pass
+
 
 subreddits = "baking+FoodPorn"
 
 links1=get_urls(subreddits)
 links = get_img_links(links1)
-#a = [x for x in  get_imgur_links(links)]
+
 print("DETAILS")
 for link in links:
     print("""
@@ -62,7 +67,10 @@ for link in links:
         Link: {},
         Subreddit: {}
         Score:{},
-        """.format(link.id, link.permalink,link.url,link.subreddit,link.score)
+        Title: {},
+        """.format(
+            link.id, link.permalink,
+            link.url,link.subreddit,
+            link.score, link.title,
+                )
         )
-
-
