@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<title>Foodie</title>
+
+
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+		<style>
+		.grid-item {width:300px;}
+		.grid-item--width2 {width:400px;}
+		img { width: 100%;}
+		</style>
+	</head>
+
+	<body>
+
+
+<div class="container">
+
+
+		<div class="grid">
+		  $images
+		</div>
+
+
+
+</div>
+
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+	<script src="https://npmcdn.com/masonry-layout@4.1/dist/masonry.pkgd.min.js"></script>
+	<script src="http://imagesloaded.desandro.com/imagesloaded.pkgd.js"></script>
+ 	<script>
+	var $$grid = $$('.grid').masonry({
+	  itemSelector: '.grid-item',
+	  percentPosition: true,
+	  columnWidth: 100
+	});
+	// layout Isotope after each image loads
+	$$grid.imagesLoaded().progress( function() {
+	  $$grid.masonry();
+	});
+
+
+	</script>
+
+	</body>
+
+</html>

@@ -2,6 +2,11 @@ import praw
 import re
 from string import Template
 import random
+from datetime import datetime
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+import os
 
 user_agent = "Give me Food"
 r = praw.Reddit(user_agent=user_agent)
@@ -40,12 +45,13 @@ def add_jpg(url):
         if result:
             url = result.group(0) + ".jpg"
         return url
+
 def get_img_links(links):
     """
     Returns the image link of a reddit link
     """
     img_links = []
-    score = 200
+    score = 100
     image_count = 10
     for link in links:
         if len(img_links) == image_count:
@@ -69,13 +75,39 @@ def imgur_album_images(album_id):
     return [x.url for x in get_album_images(album_id)]
 
 
-subreddits = "baking+FoodPorn"
 
-links1=get_urls(subreddits)
-links = get_img_links(links1)
+
+def send_html_mail(me, you,subject):
+
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = subject
+    msg['From'] = me
+    msg['To'] = you
+
+    with open("food2.html",'r')as f:
+        html_file = f.read()
+    html = html_file
+    text = "HOLA"
+    part1 = MIMEText(text, 'plain')
+    part2 = MIMEText(html, 'html')
+
+    msg.attach(part1)
+    msg.attach(part2)
+
+
+    s = smtplib.SMTP("smtp.zoho.com",587)
+    s.ehlo()
+    s.starttls()
+    s.login(me,os.environ['email_pass'])
+
+    s.sendmail(me, you, msg.as_string())
+    s.quit
+
 
 def show_prints(links):
-
+"""
+Used for prieving the values
+"""
     print("DETAILS")
     count = 0
     for link in links:
@@ -99,22 +131,37 @@ def show_prints(links):
         count += 1
 
 def save_html_file(links):
+    """
+    Opens food_template.html and writes the <img> tag with links to images.
+    Creates a new file based on food_template.html
+    """
     images = []
     for link in links:
         images.append(
             "<div class='grid-item'><img src='{}' alt='' /></div>".format(link.url)
         )
-
-    filein = open("food_template.html")
+    # Opens food_template.html containing the template of html file
+    filein = open("food_template.html",'r')
     src = Template(filein.read())
 
     d = {'images': "\n".join(images)}
     result = src.substitute(d)
     filein.close()
-    #print(result)
     result = str(result)
 
-    with open('food1.html','w') as f:
+    # Creates a new file and putting the image links in new file
+    #filename = "{}.html".format(datetime.now().__str__())
+    #filename = "pages/{}".format(filename)
+    pages = os.listdir("pages")
+    filename = "pages/{}".format(str(len(pages)+1))
+    with open(filename,'w') as f:
         f.write(result)
+
+
+subreddits = "baking+FoodPorn"
+
+links1=get_urls(subreddits)
+links = get_img_links(links1)
+
 print("Now Creating HTML file")
 save_html_file(links)
