@@ -8,7 +8,7 @@ def get_urls(subreddit):
     """
     Returns a list of urls depending on what subreddit
     """
-    submissions = r.get_subreddit(subreddit).get_hot()
+    submissions = r.get_subreddit(subreddit).get_hot(limit=100)
     return [x for x in submissions]
 
 def is_image(url):
@@ -32,10 +32,14 @@ def get_img_links(links):
     """
     img_links = []
     score = 200
+
     for link in links:
-        if is_image(link.url) and link.score > score :
+        if len(img_links) == 5:
+            return img_links
+        elif is_image(link.url) and link.score > score :
            img_links.append(link)
-    return img_links[:5]
+
+    return img_links
 
 def is_imgur_album(imgur_link):
     """
@@ -60,8 +64,11 @@ links1=get_urls(subreddits)
 links = get_img_links(links1)
 
 print("DETAILS")
+count = 0
 for link in links:
+    count += 1
     print("""
+        #: {},
         ID: {},
         Permalink: {},
         Link: {},
@@ -69,6 +76,7 @@ for link in links:
         Score:{},
         Title: {},
         """.format(
+            count,
             link.id, link.permalink,
             link.url,link.subreddit,
             link.score, link.title,
