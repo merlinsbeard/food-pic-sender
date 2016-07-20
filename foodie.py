@@ -105,9 +105,9 @@ def send_html_mail(me, you,subject):
 
 
 def show_prints(links):
-"""
-Used for prieving the values
-"""
+    """
+    Used for prieving the values
+    """
     print("DETAILS")
     count = 0
     for link in links:
@@ -153,7 +153,7 @@ def save_html_file(links):
     #filename = "{}.html".format(datetime.now().__str__())
     #filename = "pages/{}".format(filename)
     pages = os.listdir("pages")
-    filename = "pages/{}".format(str(len(pages)+1))
+    filename = "pages/{}.html".format(str(len(pages)+1))
     with open(filename,'w') as f:
         f.write(result)
 
