@@ -51,7 +51,7 @@ def get_img_links(links):
     Returns the image link of a reddit link
     """
     img_links = []
-    score = 100
+    score = 50
     image_count = 10
     for link in links:
         if len(img_links) == image_count:
@@ -144,7 +144,14 @@ def save_html_file(links):
     filein = open("food_template.html",'r')
     src = Template(filein.read())
 
-    d = {'images': "\n".join(images)}
+    pages = os.listdir("pages")
+    filename = "pages/{}.html".format(str(len(pages)+1))
+    
+    d = {
+        'images': "\n".join(images),
+        'next' : "",
+        'previous': "",
+        }
     result = src.substitute(d)
     filein.close()
     result = str(result)
@@ -152,8 +159,7 @@ def save_html_file(links):
     # Creates a new file and putting the image links in new file
     #filename = "{}.html".format(datetime.now().__str__())
     #filename = "pages/{}".format(filename)
-    pages = os.listdir("pages")
-    filename = "pages/{}.html".format(str(len(pages)+1))
+    print("Creating New page {}.html".format(len(pages)+ 1))
     with open(filename,'w') as f:
         f.write(result)
 
