@@ -7,6 +7,7 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import os
+import sys, getopt
 
 user_agent = "Give me Food"
 r = praw.Reddit(user_agent=user_agent)
@@ -74,35 +75,32 @@ def imgur_album_images(album_id):
 
     return [x.url for x in get_album_images(album_id)]
 
+def send_html_mail(you, subject, food_page):
 
-
-
-def send_html_mail(me, you,subject):
-
+    me = os.environ['food_email']
     msg = MIMEMultipart('alternative')
     msg['Subject'] = subject
     msg['From'] = me
     msg['To'] = you
 
-    with open("food2.html",'r')as f:
+    with open(food_page,'r')as f:
         html_file = f.read()
     html = html_file
     text = "HOLA"
-    part1 = MIMEText(text, 'plain')
+    #part1 = MIMEText(text, 'plain')
     part2 = MIMEText(html, 'html')
 
-    msg.attach(part1)
+    #msg.attach(part1)
     msg.attach(part2)
 
 
     s = smtplib.SMTP("smtp.zoho.com",587)
     s.ehlo()
     s.starttls()
-    s.login(me,os.environ['email_pass'])
+    s.login(me,os.environ['food_password'])
 
     s.sendmail(me, you, msg.as_string())
     s.quit
-
 
 def show_prints(links):
     """
@@ -145,12 +143,14 @@ def save_html_file(links):
     src = Template(filein.read())
 
     pages = os.listdir("pages")
-    filename = "pages/{}.html".format(str(len(pages)+1))
-    
+    page_num = len(pages)+ 1
+    filename = "pages/{}.html".format(page_num)
+    url = "http://caffeine.dailywarrior.ph/food"
+    previous_link = "{}/{}.html".format(url, page_num -1)
     d = {
         'images': "\n".join(images),
         'next' : "",
-        'previous': "",
+        'previous': previous_link,
         }
     result = src.substitute(d)
     filein.close()
@@ -159,15 +159,29 @@ def save_html_file(links):
     # Creates a new file and putting the image links in new file
     #filename = "{}.html".format(datetime.now().__str__())
     #filename = "pages/{}".format(filename)
-    print("Creating New page {}.html".format(len(pages)+ 1))
+    print("Creating New page {}.html".format(page_num))
     with open(filename,'w') as f:
         f.write(result)
 
+def food_play(argv):
+    try:
+        opts, args = getopt.getopt(argv,"e:",["email="])
+    except getopt.GetoptError:
+        print("foodie.py -e <email@email.com>")
+        sys.exit(2)
+    for opt, arg in opts:
+        you = arg
+    print("HEYO {}".format(you))
+    subreddits = "baking+FoodPorn"
+    links1=get_urls(subreddits)
+    links = get_img_links(links1)
+    print("Now Creating HTML file")
+    save_html_file(links)
+    pages = os.listdir("pages")
+    page_num = len(pages)
+    filename = "pages/{}.html".format(page_num)
+    send_html_mail(you, "Food of the day", filename)
+    print("SUCCESS!")
 
-subreddits = "baking+FoodPorn"
-
-links1=get_urls(subreddits)
-links = get_img_links(links1)
-
-print("Now Creating HTML file")
-save_html_file(links)
+if __name__ == '__main__':
+    food_play(sys.argv[1:])
