@@ -147,10 +147,12 @@ def save_html_file(links):
     filename = "pages/{}.html".format(page_num)
     url = "http://caffeine.dailywarrior.ph/food"
     previous_link = "{}/{}.html".format(url, page_num -1)
+    page_url = "{}/{}.html".format(url, page_num)
     d = {
         'images': "\n".join(images),
         'next' : "",
         'previous': previous_link,
+        'page_url': page_url,
         }
     result = src.substitute(d)
     filein.close()
@@ -162,6 +164,18 @@ def save_html_file(links):
     print("Creating New page {}.html".format(page_num))
     with open(filename,'w') as f:
         f.write(result)
+
+def send_new_image():
+    """
+    Sends a new page and email to clients
+    """
+    pass
+
+def send_previous_image():
+    """
+    Sends the previous image to a client
+    """
+    pass
 
 def food_play(argv):
     try:
