@@ -148,11 +148,16 @@ def save_html_file(links):
     url = "http://caffeine.dailywarrior.ph/food"
     previous_link = "{}/{}.html".format(url, page_num -1)
     page_url = "{}/{}.html".format(url, page_num)
+
+    sounds = os.listdir("sounds")
+    music = "sounds/{}.mp3".format(len(sounds))
+
     d = {
         'images': "\n".join(images),
         'next' : "",
         'previous': previous_link,
         'page_url': page_url,
+        'music': music,
         }
     result = src.substitute(d)
     filein.close()
