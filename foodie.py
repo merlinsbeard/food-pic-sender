@@ -150,8 +150,9 @@ def save_html_file(links):
     previous_link = "{}/{}.html".format(url, page_num -1)
     page_url = "{}/{}.html".format(url, page_num)
 
-    sounds = os.listdir("sounds")
-    music = "sounds/{}.mp3".format(len(sounds))
+    #sounds = os.listdir("sounds")
+    #music = "sounds/{}.mp3".format(len(sounds))
+    music = "sounds/"
 
     d = {
         'images': "\n".join(images),
