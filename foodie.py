@@ -8,6 +8,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import os
 import sys, getopt
+import argparse
 
 user_agent = "Give me Food"
 r = praw.Reddit(user_agent=user_agent)
@@ -182,25 +183,30 @@ def send_previous_image():
     """
     pass
 
-def food_play(argv):
-    try:
-        opts, args = getopt.getopt(argv,"e:",["email="])
-    except getopt.GetoptError:
-        print("foodie.py -e <email@email.com>")
-        sys.exit(2)
-    for opt, arg in opts:
-        you = arg
-    print("HEYO {}".format(you))
-    subreddits = "baking+FoodPorn"
-    links1=get_urls(subreddits)
+
+def main():
+    parser= argparse.ArgumentParser()
+    parser.add_argument("email", type=str, help="Email")
+    parser.add_argument("subreddit",type=str, help="subreddits")
+
+    args = parser.parse_args()
+    email = args.email
+    # subreddit = baking+FoodPorn
+    subreddit = args.subreddit
+
+    print("HEYO {}".format(email))
+    links1 = get_urls(subreddit)
     links = get_img_links(links1)
     print("Now Creating HTML file")
     save_html_file(links)
     pages = os.listdir("pages")
     page_num = len(pages)
     filename = "pages/{}.html".format(page_num)
-    send_html_mail(you, "Food of the day", filename)
+    send_html_mail(email, "Food of the day", filename)
     print("SUCCESS!")
 
+
+
 if __name__ == '__main__':
-    food_play(sys.argv[1:])
+    main()
+    #food_play(sys.argv[1:])
