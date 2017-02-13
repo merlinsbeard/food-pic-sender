@@ -6,22 +6,33 @@ from datetime import datetime
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
 import os
 import sys, getopt
 import argparse
+from envparse import env
+from os.path import basename
 
-user_agent = "Give me Food"
-r = praw.Reddit(user_agent=user_agent)
+env.read_envfile()
+
+user_agent = env('USER_AGENT')
+client_id=env('CLIENT_ID')
+client_secret=env('CLIENT_SECRET')
+r = praw.Reddit(
+        client_id=client_id,
+        client_secret=client_secret,
+        user_agent=user_agent)
 
 def get_urls(subreddit):
     """
     Returns a list of urls depending on what subreddit
     """
-    submissions = r.get_subreddit(subreddit).get_hot(limit=100)
+    submissions = r.subreddit(subreddit).hot(limit=100)
 
     links = [x for x in submissions]
     random.shuffle(links)
     return links
+
 def is_image(url):
     """
     Returns True if link is an imgur or reddit link
@@ -78,7 +89,9 @@ def imgur_album_images(album_id):
 
 def send_html_mail(you, subject, food_page):
 
-    me = os.environ['food_email']
+    #me = os.environ['food_email']
+    me = env('FOOD_EMAIL')
+    me_pass = env('FOOD_EMAIL_PASS')
     msg = MIMEMultipart('alternative')
     msg['Subject'] = subject
     msg['From'] = me
@@ -86,6 +99,14 @@ def send_html_mail(you, subject, food_page):
 
     with open(food_page,'r')as f:
         html_file = f.read()
+        part = MIMEApplication(
+                html_file,
+                Name=basename(food_page)
+                #Name=food_page
+                )
+        part['Content-Disposition'] = 'attachment; filename={}'.format(basename(food_page))
+        msg.attach(part)
+
     html = html_file
     text = "HOLA"
     #part1 = MIMEText(text, 'plain')
@@ -98,10 +119,10 @@ def send_html_mail(you, subject, food_page):
     s = smtplib.SMTP("smtp.zoho.com",587)
     s.ehlo()
     s.starttls()
-    s.login(me,os.environ['food_password'])
+    s.login(me, me_pass)
 
     s.sendmail(me, you, msg.as_string())
-    s.quit
+    s.close()
 
 def show_prints(links):
     """
@@ -172,17 +193,6 @@ def save_html_file(links):
     with open(filename,'w') as f:
         f.write(result)
 
-def send_new_image():
-    """
-    Sends a new page and email to clients
-    """
-    pass
-
-def send_previous_image():
-    """
-    Sends the previous image to a client
-    """
-    pass
 
 
 def main():
@@ -203,7 +213,7 @@ def main():
     pages = os.listdir("pages")
     page_num = len(pages)
     filename = "pages/{}.html".format(page_num)
-    send_html_mail(email, "Food of the day", filename)
+    send_html_mail(email, "[FOOD] From your friendly neighbor", filename)
     print("SUCCESS!")
 
 
