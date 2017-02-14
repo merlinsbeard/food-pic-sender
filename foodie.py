@@ -7,6 +7,8 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
+from email.mime.base import MIMEBase
+from email import encoders
 import os
 import sys, getopt
 import argparse
@@ -99,13 +101,12 @@ def send_html_mail(you, subject, food_page):
 
     with open(food_page,'r')as f:
         html_file = f.read()
-        part = MIMEApplication(
-                html_file,
-                Name=basename(food_page)
-                #Name=food_page
-                )
-        part['Content-Disposition'] = 'attachment; filename={}'.format(basename(food_page))
-        msg.attach(part)
+        a = MIMEBase('application', 'octet-stream')
+        a.set_payload(html_file)
+        #encoders.encode_base64(a)
+        a.add_header('Content-Disposition','attachment',filename=food_page)
+        
+        msg.attach(a)
 
     html = html_file
     text = "HOLA"
