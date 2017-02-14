@@ -165,6 +165,8 @@ def save_html_file(links):
     filein = open("food_template.html",'r')
     src = Template(filein.read())
 
+    if not os.path.exists("pages"):
+        os.makedirs("pages")
     pages = os.listdir("pages")
     page_num = len(pages)+ 1
     filename = "pages/{}.html".format(page_num)
@@ -194,6 +196,14 @@ def save_html_file(links):
     with open(filename,'w') as f:
         f.write(result)
 
+def foodie(email, subreddit):
+    links1 = get_urls(subreddit)
+    links = get_img_links(links1)
+    save_html_file(links)
+    pages = os.listdir("pages")
+    page_num = len(pages)
+    filename = "pages/{}.html".format(page_num)
+    send_html_mail(email, "[FOOD] From your friendly neighbor", filename)
 
 
 def main():
