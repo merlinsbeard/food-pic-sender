@@ -2,28 +2,26 @@ import praw
 import re
 from string import Template
 import random
-from datetime import datetime
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from email.mime.application import MIMEApplication
 from email.mime.base import MIMEBase
-from email import encoders
 import os
-import sys, getopt
+import sys
+import getopt
 import argparse
 from envparse import env
-from os.path import basename
 
 env.read_envfile()
 
 user_agent = env('USER_AGENT')
-client_id=env('CLIENT_ID')
-client_secret=env('CLIENT_SECRET')
+client_id = env('CLIENT_ID')
+client_secret = env('CLIENT_SECRET')
 r = praw.Reddit(
         client_id=client_id,
         client_secret=client_secret,
         user_agent=user_agent)
+
 
 def get_urls(subreddit):
     """
@@ -34,6 +32,7 @@ def get_urls(subreddit):
     links = [x for x in submissions]
     random.shuffle(links)
     return links
+
 
 def is_image(url):
     """
@@ -50,6 +49,7 @@ def is_image(url):
             return True
     return False
 
+
 def add_jpg(url):
     patterns = [
     "((http(s?):\/\/)?((i\.)?)imgur\.com\/)([a-zA-Z0-9]{5,8})"
@@ -60,6 +60,7 @@ def add_jpg(url):
         if result:
             url = result.group(0) + ".jpg"
         return url
+
 
 def get_img_links(links):
     """
@@ -77,6 +78,7 @@ def get_img_links(links):
 
     return img_links
 
+
 def is_imgur_album(imgur_link):
     """
     Checks if a imgur url is an album
@@ -85,9 +87,11 @@ def is_imgur_album(imgur_link):
         return False
     return True
 
+
 def imgur_album_images(album_id):
 
     return [x.url for x in get_album_images(album_id)]
+
 
 def send_html_mail(you, subject, food_page):
 
@@ -99,21 +103,20 @@ def send_html_mail(you, subject, food_page):
     msg['From'] = me
     msg['To'] = you
 
-    with open(food_page,'r')as f:
+    with open(food_page, 'r')as f:
         html_file = f.read()
         a = MIMEBase('application', 'octet-stream')
         a.set_payload(html_file)
-        #encoders.encode_base64(a)
+        # encoders.encode_base64(a)
         a.add_header('Content-Disposition','attachment',filename=food_page)
-        
         msg.attach(a)
 
     html = html_file
-    text = "HOLA"
-    #part1 = MIMEText(text, 'plain')
+    # text = "HOLA"
+    # part1 = MIMEText(text, 'plain')
     part2 = MIMEText(html, 'html')
 
-    #msg.attach(part1)
+    # msg.attach(part1)
     msg.attach(part2)
 
 
@@ -125,14 +128,15 @@ def send_html_mail(you, subject, food_page):
     s.sendmail(me, you, msg.as_string())
     s.close()
 
+
 def show_prints(links):
     """
     Used for prieving the values
     """
     print("DETAILS")
     count = 0
-    for link in links:
 
+    for link in links:
 
         print("""
             #: {},
@@ -145,11 +149,12 @@ def show_prints(links):
             """.format(
                 count,
                 link.id, link.permalink,
-                link.url,link.subreddit,
+                link.url, link.subreddit,
                 link.score, link.title,
-                    )
-            )
+                       )
+                )
         count += 1
+
 
 def save_html_file(links):
     """
@@ -162,7 +167,7 @@ def save_html_file(links):
             "<div class='grid-item'><img src='{}' alt='' /></div>".format(link.url)
         )
     # Opens food_template.html containing the template of html file
-    filein = open("food_template.html",'r')
+    filein = open("food_template.html", 'r')
     src = Template(filein.read())
 
     if not os.path.exists("pages"):
@@ -171,16 +176,16 @@ def save_html_file(links):
     page_num = len(pages)+ 1
     filename = "pages/{}.html".format(page_num)
     url = "http://caffeine.dailywarrior.ph/food"
-    previous_link = "{}/{}.html".format(url, page_num -1)
+    previous_link = "{}/{}.html".format(url, page_num - 1)
     page_url = "{}/{}.html".format(url, page_num)
 
-    #sounds = os.listdir("sounds")
-    #music = "sounds/{}.mp3".format(len(sounds))
+    # sounds = os.listdir("sounds")
+    # music = "sounds/{}.mp3".format(len(sounds))
     music = "sounds/"
 
     d = {
         'images': "\n".join(images),
-        'next' : "",
+        'next': "",
         'previous': previous_link,
         'page_url': page_url,
         'music': music,
@@ -190,11 +195,12 @@ def save_html_file(links):
     result = str(result)
 
     # Creates a new file and putting the image links in new file
-    #filename = "{}.html".format(datetime.now().__str__())
-    #filename = "pages/{}".format(filename)
+    # filename = "{}.html".format(datetime.now().__str__())
+    # filename = "pages/{}".format(filename)
     print("Creating New page {}.html".format(page_num))
-    with open(filename,'w') as f:
+    with open(filename, 'w') as f:
         f.write(result)
+
 
 def foodie(email, subreddit):
     links1 = get_urls(subreddit)
@@ -207,9 +213,9 @@ def foodie(email, subreddit):
 
 
 def main():
-    parser= argparse.ArgumentParser()
+    parser = argparse.ArgumentParser()
     parser.add_argument("email", type=str, help="Email")
-    parser.add_argument("subreddit",type=str, help="subreddits")
+    parser.add_argument("subreddit", type=str, help="subreddits")
 
     args = parser.parse_args()
     email = args.email
@@ -228,7 +234,6 @@ def main():
     print("SUCCESS!")
 
 
-
 if __name__ == '__main__':
     main()
-    #food_play(sys.argv[1:])
+    # food_play(sys.argv[1:])
